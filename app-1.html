@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ZenDay</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#7c9e8a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── APP SHELL ── */
+    #login-screen, #app-shell { position: fixed; inset: 0; z-index: 10; }
+
+    /* LOGIN */
+    #login-screen {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 32px 24px; gap: 0; background: var(--cream);
+    }
+    .login-logo { font-size: 52px; margin-bottom: 12px; }
+    .login-title { font-family: 'Playfair Display', serif; font-size: 34px; color: var(--ink); letter-spacing: -1px; margin-bottom: 6px; }
+    .login-sub { font-size: 12px; color: var(--muted); margin-bottom: 44px; }
+    .login-card {
+      background: var(--cream-card); border: 1px solid var(--border);
+      border-radius: var(--radius-xl); padding: 28px;
+      width: 100%; max-width: 340px;
+      box-shadow: var(--shadow-md);
+    }
+    .login-card h3 { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--ink); margin-bottom: 20px; text-align: center; }
+    .login-card .form-row { display: flex; flex-direction: column; gap: 12px; }
+    .login-version { font-size: 10px; color: var(--faint); text-align: center; margin-top: 14px; }
+
+    /* APP SHELL */
+    #app-shell { display: flex; flex-direction: column; background: var(--cream); }
+    #app-shell.hidden { display: none; }
+
+    /* HEADER */
+    .app-header {
+      padding: 14px 18px 10px;
+      background: rgba(240,235,224,0.92); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50; flex-shrink: 0;
+    }
+    .header-logo { display: flex; align-items: center; gap: 7px; }
+    .header-logo span:first-child { font-size: 18px; }
+    .header-logo span:last-child { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--ink); }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .header-user-info { text-align: right; }
+    .header-level { font-size: 10px; color: var(--sage); }
+    .header-xp { font-size: 10px; color: var(--faint); }
+
+    /* CONTENT */
+    #content { flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 72px; position: relative; z-index: 1; }
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 60;
+      background: rgba(240,235,224,0.95); backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      display: flex; padding: 8px 0 max(12px, env(safe-area-inset-bottom));
+    }
+    .nav-item {
+      flex: 1; background: none; border: none; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 4px 0; transition: opacity 0.15s;
+    }
+    .nav-icon { font-size: 22px; transition: filter 0.2s; }
+    .nav-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--faint); transition: color 0.2s; }
+    .nav-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--sage); opacity: 0; transition: opacity 0.2s; }
+    .nav-item.active .nav-label { color: var(--sage); font-weight: 500; }
+    .nav-item.active .nav-dot { opacity: 1; }
+    .nav-item.active .nav-icon { filter: none; }
+    .nav-item:not(.active) .nav-icon { filter: grayscale(55%) opacity(0.7); }
+
+    /* ─── CALENDAR TAB ─── */
+    #tab-calendar { padding: 16px 18px; }
+    .cal-date-nav {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+    }
+    .cal-date-center { flex: 1; text-align: center; }
+    .cal-date-main { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--ink); }
+    .cal-date-sub { font-size: 10px; color: var(--faint); margin-top: 1px; }
+
+    /* TIMELINE */
+    .timeline-wrap { position: relative; }
+    .tl-row { position: relative; display: flex; align-items: flex-start; min-height: 80px; }
+    .tl-label { width: 50px; font-size: 10px; color: var(--faint); padding-top: 2px; flex-shrink: 0; font-family: 'DM Mono', monospace; }
+    .tl-line { position: absolute; left: 50px; right: 0; top: 0; border-top: 1px solid rgba(158,138,124,0.13); }
+    .tl-events { flex: 1; padding: 4px 0 0 8px; position: relative; min-height: 76px; }
+
+    /* EVENTS */
+    .event-block {
+      border-radius: var(--radius-sm); padding: 6px 10px;
+      cursor: pointer; margin-bottom: 4px; border-left: 3px solid;
+      transition: transform 0.15s, box-shadow 0.15s;
+      position: relative;
+    }
+    .event-block:hover { transform: translateX(2px); box-shadow: var(--shadow-sm); }
+    .event-block-title { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .event-block-meta { font-size: 10px; opacity: 0.7; margin-top: 2px; }
+    .event-alarm-badge { position: absolute; top: 6px; right: 8px; font-size: 9px; }
+
+    /* FLOATING ADD */
+    .fab {
+      position: fixed; bottom: 80px; right: 20px; z-index: 55;
+      width: 54px; height: 54px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--sage), var(--brown));
+      border: none; color: #f5f0e8; font-size: 26px;
+      cursor: pointer; box-shadow: 0 4px 20px rgba(124,158,138,0.45);
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .fab:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(124,158,138,0.55); }
+
+    /* ─── GOALS TAB ─── */
+    #tab-goals { padding: 16px 18px; }
+
+    .goals-xp-card {
+      background: linear-gradient(135deg, rgba(124,158,138,0.12), rgba(196,168,130,0.12));
+      border: 1px solid var(--sage-border); border-radius: var(--radius-lg);
+      padding: 18px 20px; margin-bottom: 16px;
+    }
+    .goals-xp-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .goals-xp-orb {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--sage), var(--brown));
+      display: flex; align-items: center; justify-content: center; font-size: 22px;
+    }
+    .goals-xp-info-level { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--ink); }
+    .goals-xp-info-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    .goals-filter { display: flex; gap: 6px; margin-bottom: 14px; }
+    .filter-btn {
+      flex: 1; padding: 7px 4px; border-radius: 10px; cursor: pointer;
+      font-family: 'DM Mono', monospace; font-size: 11px;
+      border: 1px solid; transition: all 0.18s; text-transform: capitalize;
+    }
+
+    .goals-list { display: flex; flex-direction: column; gap: 10px; }
+    .goal-item {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--cream-card); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 13px 14px;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .goal-item.done { opacity: 0.65; }
+    .goal-check-circle {
+      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+      border: 2px solid var(--sand); display: flex; align-items: center;
+      justify-content: center; font-size: 12px; color: #f5f0e8;
+      transition: all 0.2s;
+    }
+    .goal-check-circle.checked { background: var(--sage); border-color: var(--sage); }
+    .goal-body { flex: 1; min-width: 0; }
+    .goal-title { font-size: 13px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .goal-title.done { text-decoration: line-through; }
+    .goal-tags-row { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
+    .goal-xp-badge { font-size: 11px; color: var(--sand); flex-shrink: 0; font-weight: 500; }
+
+    /* ─── FRIENDS TAB ─── */
+    #tab-friends { padding: 16px 18px; display: flex; flex-direction: column; gap: 16px; }
+
+    .invite-card {
+      background: rgba(124,158,138,0.08); border: 1px solid var(--sage-border);
+      border-radius: var(--radius-lg); padding: 16px;
+    }
+    .invite-card h4 { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--ink); margin-bottom: 10px; }
+    .invite-row { display: flex; gap: 8px; align-items: center; }
+    .invite-link-box {
+      flex: 1; background: rgba(245,240,232,0.8); border-radius: var(--radius-sm);
+      padding: 8px 12px; font-size: 11px; color: var(--muted);
+      border: 1px solid var(--border); overflow: hidden;
+      white-space: nowrap; text-overflow: ellipsis;
+    }
+    .friend-item {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--cream-card); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 12px 14px;
+    }
+    .friend-info { flex: 1; }
+    .friend-name { font-size: 13px; color: var(--ink); font-weight: 500; }
+    .friend-shared { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    /* ─── EVENT FORM ─── */
+    .form-stack { display: flex; flex-direction: column; gap: 14px; }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .cat-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cat-btn {
+      padding: 5px 11px; border-radius: 99px; font-size: 12px; cursor: pointer;
+      font-family: 'DM Mono', monospace; border: 1px solid; transition: all 0.18s;
+    }
+    .alarm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .friends-share { display: flex; gap: 8px; flex-wrap: wrap; }
+    .share-friend-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px 5px 5px; border-radius: 99px; cursor: pointer;
+      font-family: 'DM Mono', monospace; font-size: 12px; border: 1px solid;
+      transition: all 0.18s;
+    }
+    .save-btn {
+      width: 100%; padding: 13px; border-radius: var(--radius-md);
+      border: none; font-family: 'DM Mono', monospace; font-size: 13px;
+      font-weight: 500; cursor: pointer; color: #f5f0e8; transition: opacity 0.18s;
+    }
+    .save-btn:hover { opacity: 0.88; }
+
+    /* ─── PROFILE ─── */
+    #tab-profile { padding: 24px 18px; display: flex; flex-direction: column; gap: 20px; }
+    .profile-card {
+      background: var(--cream-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 22px;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+    }
+    .profile-name { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--ink); }
+    .profile-username { font-size: 12px; color: var(--muted); }
+    .profile-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+    .stat-box {
+      background: var(--cream-card); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 14px 10px; text-align: center;
+    }
+    .stat-val { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--ink); }
+    .stat-label { font-size: 10px; color: var(--muted); margin-top: 4px; }
+    .logout-btn {
+      width: 100%; padding: 13px; border-radius: var(--radius-md);
+      border: 1px solid var(--border); background: none;
+      font-family: 'DM Mono', monospace; font-size: 13px;
+      color: var(--muted); cursor: pointer; transition: all 0.18s;
+    }
+    .logout-btn:hover { border-color: #c47c7c; color: #c47c7c; }
+  </style>
+</head>
+<body>
+  <div class="bg-blob bg-blob-1"></div>
+  <div class="bg-blob bg-blob-2"></div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen">
+    <div class="login-logo">🍃</div>
+    <h1 class="login-title">ZenDay</h1>
+    <p class="login-sub">calm. focused. yours.</p>
+    <div class="login-card">
+      <h3>Welcome back</h3>
+      <div class="form-row">
+        <div>
+          <label>Username</label>
+          <input class="input" id="login-username" placeholder="komino_dev" maxlength="30" />
+        </div>
+        <div>
+          <label>Display Name</label>
+          <input class="input" id="login-name" placeholder="Kayo" maxlength="30" />
+        </div>
+        <button class="btn btn-sage" style="width:100%;margin-top:4px" onclick="doLogin()">Enter ZenDay →</button>
+      </div>
+      <div class="login-version">v0.1.0 · App #5 · komino_dev</div>
+    </div>
+  </div>
+
+  <!-- APP SHELL -->
+  <div id="app-shell" class="hidden">
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="header-logo">
+        <span>🍃</span>
+        <span>ZenDay</span>
+      </div>
+      <div class="header-right">
+        <div class="header-user-info">
+          <div class="header-level" id="header-level">Lv. 1</div>
+          <div class="header-xp" id="header-xp">0 XP</div>
+        </div>
+        <div class="avatar" id="header-avatar" style="width:36px;height:36px;font-size:14px;background:var(--sage)"></div>
+      </div>
+    </header>
+
+    <!-- CONTENT AREA -->
+    <div id="content">
+      <!-- CALENDAR TAB -->
+      <div id="tab-calendar">
+        <div class="cal-date-nav">
+          <button class="btn btn-icon" onclick="changeDate(-1)">‹</button>
+          <div class="cal-date-center">
+            <div class="cal-date-main" id="cal-date-main"></div>
+            <div class="cal-date-sub" id="cal-date-sub"></div>
+          </div>
+          <button class="btn btn-icon" onclick="changeDate(1)">›</button>
+        </div>
+        <div class="timeline-wrap" id="timeline"></div>
+      </div>
+
+      <!-- GOALS TAB -->
+      <div id="tab-goals" style="display:none">
+        <div class="goals-xp-card">
+          <div class="goals-xp-top">
+            <div class="goals-xp-orb">⚡</div>
+            <div>
+              <div class="goals-xp-info-level" id="goals-level">Level 1</div>
+              <div class="goals-xp-info-sub" id="goals-done-count">0 / 0 goals done</div>
+            </div>
+          </div>
+          <div class="xp-bar-wrap">
+            <div class="xp-bar-labels">
+              <span id="xp-label-left">0 XP this level</span>
+              <span id="xp-label-right">100 XP to next</span>
+            </div>
+            <div class="xp-bar-track"><div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div class="goals-filter">
+          <button class="filter-btn" data-filter="all" onclick="setGoalFilter('all')">All</button>
+          <button class="filter-btn" data-filter="daily" onclick="setGoalFilter('daily')">Daily</button>
+          <button class="filter-btn" data-filter="weekly" onclick="setGoalFilter('weekly')">Weekly</button>
+          <button class="filter-btn" data-filter="monthly" onclick="setGoalFilter('monthly')">Monthly</button>
+        </div>
+        <div class="goals-list" id="goals-list"></div>
+        <button class="btn btn-sage" style="width:100%;margin-top:14px" onclick="openGoalForm()">+ New Goal</button>
+      </div>
+
+      <!-- FRIENDS TAB -->
+      <div id="tab-friends" style="display:none">
+        <div class="invite-card">
+          <h4>Your Invite Link</h4>
+          <div class="invite-row">
+            <div class="invite-link-box" id="invite-link-box"></div>
+            <button class="btn btn-sage" style="padding:9px 14px;font-size:12px" onclick="copyInviteLink()">Copy</button>
+          </div>
+        </div>
+        <div>
+          <label style="margin-bottom:8px">Add Friend by Username</label>
+          <div style="display:flex;gap:8px">
+            <input class="input" id="add-friend-input" placeholder="username..." style="flex:1" />
+            <button class="btn btn-sage" style="padding:9px 14px;font-size:12px" onclick="addFriend()">Add</button>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--ink);margin-bottom:10px" id="friends-count-label">Friends (0)</div>
+          <div id="friends-list" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+      </div>
+
+      <!-- PROFILE TAB -->
+      <div id="tab-profile" style="display:none">
+        <div class="profile-card">
+          <div class="avatar" id="profile-avatar" style="width:72px;height:72px;font-size:28px;background:var(--sage)"></div>
+          <div class="profile-name" id="profile-name"></div>
+          <div class="profile-username" id="profile-username"></div>
+          <div style="width:100%;margin-top:4px">
+            <div class="xp-bar-labels"><span id="profile-xp-label">LVL 1</span><span id="profile-xp-count">0 XP</span></div>
+            <div class="xp-bar-track" style="margin-top:6px"><div class="xp-bar-fill" id="profile-xp-fill" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div class="profile-stats">
+          <div class="stat-box"><div class="stat-val" id="stat-events">0</div><div class="stat-label">Events</div></div>
+          <div class="stat-box"><div class="stat-val" id="stat-goals">0</div><div class="stat-label">Goals Done</div></div>
+          <div class="stat-box"><div class="stat-val" id="stat-level">1</div><div class="stat-label">Level</div></div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-tab="calendar" onclick="switchTab('calendar')">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">Calendar</span>
+        <div class="nav-dot"></div>
+      </button>
+      <button class="nav-item" data-tab="goals" onclick="switchTab('goals')">
+        <span class="nav-icon">⚡</span>
+        <span class="nav-label">Goals</span>
+        <div class="nav-dot"></div>
+      </button>
+      <button class="nav-item" data-tab="friends" onclick="switchTab('friends')">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Friends</span>
+        <div class="nav-dot"></div>
+      </button>
+      <button class="nav-item" data-tab="profile" onclick="switchTab('profile')">
+        <span class="nav-icon">🌿</span>
+        <span class="nav-label">Profile</span>
+        <div class="nav-dot"></div>
+      </button>
+    </nav>
+
+    <!-- FAB -->
+    <button class="fab" id="fab" onclick="openEventForm()">+</button>
+  </div>
+
+  <!-- EVENT MODAL -->
+  <div class="modal-overlay" id="event-modal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <span class="modal-title" id="event-modal-title">New Event</span>
+        <button class="modal-close" onclick="closeModal('event-modal')">×</button>
+      </div>
+      <div class="form-stack" id="event-form"></div>
+    </div>
+  </div>
+
+  <!-- GOAL MODAL -->
+  <div class="modal-overlay" id="goal-modal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <span class="modal-title">New Goal</span>
+        <button class="modal-close" onclick="closeModal('goal-modal')">×</button>
+      </div>
+      <div class="form-stack" id="goal-form"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

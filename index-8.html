@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZenDay — calm. focused. yours.</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#7c9e8a" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #f0ebe0;
+      --cream-dark: #e8e0d0;
+      --sage: #7c9e8a;
+      --sand: #c4a882;
+      --brown: #9e8a7c;
+      --ink: #2d2820;
+      --muted: #9e8a7c;
+      --faint: #b0a090;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'DM Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    /* ── GRAIN ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── BLOBS ── */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .blob-1 { width: 400px; height: 400px; background: rgba(124,158,138,0.18); top: -100px; left: -100px; }
+    .blob-2 { width: 350px; height: 350px; background: rgba(196,168,130,0.15); bottom: 50px; right: -80px; }
+    .blob-3 { width: 250px; height: 250px; background: rgba(158,138,124,0.12); top: 40%; left: 40%; }
+
+    /* ── LAYOUT ── */
+    .wrap { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── NAV ── */
+    nav {
+      padding: 22px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo span.leaf { font-size: 22px; }
+    .nav-logo span.name { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--ink); letter-spacing: -0.3px; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 12px; letter-spacing: 0.5px; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--ink); }
+    .btn-nav {
+      padding: 8px 18px; border-radius: 99px;
+      background: var(--sage); color: #f5f0e8;
+      font-family: 'DM Mono', monospace; font-size: 12px;
+      border: none; cursor: pointer; text-decoration: none;
+      transition: opacity 0.2s; display: inline-block;
+    }
+    .btn-nav:hover { opacity: 0.85; }
+
+    /* ── HERO ── */
+    .hero {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 60px 24px 40px; text-align: center;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(124,158,138,0.12); border: 1px solid rgba(124,158,138,0.3);
+      border-radius: 99px; padding: 5px 14px; margin-bottom: 32px;
+      font-size: 11px; color: var(--sage); letter-spacing: 1px;
+      animation: fadeUp 0.6s ease both;
+    }
+    .hero-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sage); }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(42px, 9vw, 80px);
+      line-height: 1.08; letter-spacing: -2px;
+      color: var(--ink); margin-bottom: 12px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+    .hero-title em { font-style: italic; color: var(--sage); }
+    .hero-sub {
+      font-size: 13px; color: var(--muted); margin-bottom: 44px; line-height: 1.8;
+      max-width: 380px; animation: fadeUp 0.6s 0.2s ease both;
+    }
+    .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; animation: fadeUp 0.6s 0.3s ease both; }
+    .btn-primary {
+      padding: 14px 32px; border-radius: 99px;
+      background: var(--ink); color: var(--cream);
+      font-family: 'DM Mono', monospace; font-size: 13px;
+      border: none; cursor: pointer; text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(45,40,32,0.15);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(45,40,32,0.2); }
+    .btn-ghost {
+      padding: 14px 28px; border-radius: 99px;
+      border: 1px solid rgba(158,138,124,0.4);
+      background: none; color: var(--muted);
+      font-family: 'DM Mono', monospace; font-size: 13px;
+      cursor: pointer; text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
+
+    /* ── PREVIEW CARD ── */
+    .preview {
+      margin: 48px auto 0; width: 100%; max-width: 360px;
+      animation: fadeUp 0.7s 0.4s ease both;
+    }
+    .preview-phone {
+      background: rgba(245,240,232,0.9);
+      border: 1px solid rgba(158,138,124,0.2);
+      border-radius: 28px;
+      padding: 20px;
+      box-shadow: 0 24px 80px rgba(45,40,32,0.12), 0 2px 0 rgba(255,255,255,0.6) inset;
+    }
+    .preview-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .preview-title { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--ink); }
+    .preview-date { font-size: 10px; color: var(--faint); }
+    .preview-event {
+      border-radius: 10px; padding: 10px 12px; margin-bottom: 8px;
+      border-left: 3px solid;
+    }
+    .preview-event-title { font-size: 11px; font-weight: 500; }
+    .preview-event-time { font-size: 10px; opacity: 0.7; margin-top: 2px; }
+    .ev1 { background: rgba(124,158,138,0.12); border-color: #7c9e8a; }
+    .ev1 .preview-event-title { color: #7c9e8a; }
+    .ev2 { background: rgba(158,138,124,0.1); border-color: #9e8a7c; }
+    .ev2 .preview-event-title { color: #9e8a7c; }
+    .ev3 { background: rgba(124,130,158,0.1); border-color: #7c8a9e; }
+    .ev3 .preview-event-title { color: #7c8a9e; }
+    .preview-xp { margin-top: 14px; }
+    .preview-xp-label { font-size: 10px; color: var(--faint); margin-bottom: 5px; display: flex; justify-content: space-between; }
+    .preview-xp-bar { height: 6px; background: rgba(158,138,124,0.15); border-radius: 99px; overflow: hidden; }
+    .preview-xp-fill { height: 100%; width: 38%; background: linear-gradient(90deg, #7c9e8a, #9e8a7c); border-radius: 99px; }
+
+    /* ── FEATURES ── */
+    .features {
+      padding: 80px 24px; max-width: 900px; margin: 0 auto; width: 100%;
+    }
+    .section-tag {
+      font-size: 11px; letter-spacing: 2px; color: var(--sage);
+      text-transform: uppercase; text-align: center; margin-bottom: 14px;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif; font-size: clamp(28px, 5vw, 42px);
+      text-align: center; color: var(--ink); margin-bottom: 56px; letter-spacing: -1px;
+    }
+    .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    .feat-card {
+      background: rgba(245,240,232,0.7); border: 1px solid rgba(158,138,124,0.18);
+      border-radius: 20px; padding: 24px; transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .feat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(45,40,32,0.08); }
+    .feat-icon { font-size: 28px; margin-bottom: 14px; }
+    .feat-name { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--ink); margin-bottom: 8px; }
+    .feat-desc { font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+    /* ── GOALS PREVIEW ── */
+    .goals-section {
+      padding: 0 24px 80px; max-width: 700px; margin: 0 auto; width: 100%;
+    }
+    .goal-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px; border-radius: 14px; margin-bottom: 10px;
+      background: rgba(245,240,232,0.7); border: 1px solid rgba(158,138,124,0.15);
+      animation: fadeUp 0.5s ease both;
+    }
+    .goal-check {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      border: 2px solid var(--sand); display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: #f5f0e8;
+    }
+    .goal-check.done { background: var(--sage); border-color: var(--sage); }
+    .goal-text { flex: 1; font-size: 13px; color: var(--ink); }
+    .goal-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+    .goal-tag {
+      font-size: 10px; padding: 2px 8px; border-radius: 99px;
+      background: rgba(124,158,138,0.12); color: var(--sage);
+      border: 1px solid rgba(124,158,138,0.25);
+    }
+    .goal-xp { font-size: 11px; color: var(--sand); font-weight: 500; flex-shrink: 0; }
+
+    /* ── CTA SECTION ── */
+    .cta-section {
+      padding: 60px 24px 80px; text-align: center;
+      background: rgba(124,158,138,0.06);
+      border-top: 1px solid rgba(124,158,138,0.12);
+    }
+    .cta-section h2 { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--ink); margin-bottom: 12px; letter-spacing: -0.5px; }
+    .cta-section p { font-size: 13px; color: var(--muted); margin-bottom: 32px; }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 24px 32px; border-top: 1px solid rgba(158,138,124,0.12);
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 11px; color: var(--faint);
+    }
+    .footer-right { display: flex; gap: 20px; }
+    footer a { color: var(--faint); text-decoration: none; transition: color 0.2s; }
+    footer a:hover { color: var(--ink); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 600px) {
+      nav { padding: 16px 20px; }
+      .nav-links { gap: 12px; }
+      .nav-links a:not(.btn-nav) { display: none; }
+      footer { flex-direction: column; gap: 12px; text-align: center; }
+      .footer-right { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="wrap">
+    <!-- NAV -->
+    <nav>
+      <a href="index.html" class="nav-logo">
+        <span class="leaf">🍃</span>
+        <span class="name">ZenDay</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#goals">Goals</a>
+        <a href="app.html" class="btn-nav">Open App →</a>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-tag">
+        <div class="hero-dot"></div>
+        v0.1.0 · App #5 of 10 · komino_dev
+      </div>
+      <h1 class="hero-title">Your day,<br /><em>at peace.</em></h1>
+      <p class="hero-sub">A calm calendar + goals tracker built for people who want to do meaningful work without the noise.</p>
+      <div class="hero-cta">
+        <a href="app.html" class="btn-primary">Start Planning →</a>
+        <a href="#features" class="btn-ghost">See Features</a>
+      </div>
+
+      <!-- Phone preview -->
+      <div class="preview">
+        <div class="preview-phone">
+          <div class="preview-bar">
+            <span class="preview-title">Sunday, Apr 5</span>
+            <span class="preview-date">Lv.3 · 140 XP</span>
+          </div>
+          <div class="preview-event ev1">
+            <div class="preview-event-title">🖥️ Dev Block 1 — Komino Browser</div>
+            <div class="preview-event-time">11:00 AM – 1:00 PM</div>
+          </div>
+          <div class="preview-event ev2">
+            <div class="preview-event-title">🗣️ Language Learning Session</div>
+            <div class="preview-event-time">10:00 AM – 11:00 AM</div>
+          </div>
+          <div class="preview-event ev3">
+            <div class="preview-event-title">💼 Business Management Block</div>
+            <div class="preview-event-time">8:30 PM – 12:00 AM</div>
+          </div>
+          <div class="preview-xp">
+            <div class="preview-xp-label"><span>⚡ Daily XP</span><span>140 / 370</span></div>
+            <div class="preview-xp-bar"><div class="preview-xp-fill"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features" id="features">
+      <div class="section-tag">What's inside</div>
+      <h2 class="section-title">Everything you need,<br />nothing you don't.</h2>
+      <div class="feat-grid">
+        <div class="feat-card">
+          <div class="feat-icon">📅</div>
+          <div class="feat-name">Day Timeline</div>
+          <div class="feat-desc">Visual hour-by-hour timeline with overlapping event support and color-coded categories. Add, edit, or delete in seconds.</div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">⚡</div>
+          <div class="feat-name">Goals & XP</div>
+          <div class="feat-desc">Turn your to-dos into goals with XP rewards. Daily, weekly, monthly — watch your level bar grow as you check things off.</div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">🔔</div>
+          <div class="feat-name">Smart Alarms</div>
+          <div class="feat-desc">Set reminder sounds before events start. Bell, chime, rain drop, singing bowl — or silence. Your choice.</div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">👥</div>
+          <div class="feat-name">Share Events</div>
+          <div class="feat-desc">Share events with friends by username or invite link. See shared events at a glance directly on the timeline.</div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">🏷️</div>
+          <div class="feat-name">8 Categories</div>
+          <div class="feat-desc">Dev, Study, Business, Creative, Health, Social, Meals, Personal — each with its own warm color on the timeline.</div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">📲</div>
+          <div class="feat-name">Install as App</div>
+          <div class="feat-desc">Full PWA — install on your phone or desktop, works offline, feels native. No App Store needed.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GOALS PREVIEW -->
+    <section class="goals-section" id="goals">
+      <div class="section-tag">Goals system</div>
+      <h2 class="section-title" style="margin-bottom:32px;">Chase goals,<br />not tasks.</h2>
+
+      <div class="goal-item" style="animation-delay:0s">
+        <div class="goal-check done">✓</div>
+        <div style="flex:1">
+          <div class="goal-text">🌅 Morning routine + breakfast done by 10AM</div>
+          <div class="goal-tags">
+            <span class="goal-tag">daily</span>
+            <span class="goal-tag" style="color:#c4a882;border-color:rgba(196,168,130,0.3);background:rgba(196,168,130,0.1)">personal</span>
+          </div>
+        </div>
+        <div class="goal-xp">+10 xp</div>
+      </div>
+      <div class="goal-item" style="animation-delay:0.1s">
+        <div class="goal-check done">✓</div>
+        <div style="flex:1">
+          <div class="goal-text">🗣️ Complete 1h language learning session</div>
+          <div class="goal-tags">
+            <span class="goal-tag">daily</span>
+            <span class="goal-tag" style="color:#9e8a7c;border-color:rgba(158,138,124,0.3);background:rgba(158,138,124,0.1)">study</span>
+          </div>
+        </div>
+        <div class="goal-xp">+25 xp</div>
+      </div>
+      <div class="goal-item" style="animation-delay:0.2s">
+        <div class="goal-check"></div>
+        <div style="flex:1">
+          <div class="goal-text">🖥️ Ship 1 feature on Komino Browser</div>
+          <div class="goal-tags">
+            <span class="goal-tag">daily</span>
+            <span class="goal-tag" style="color:#7c8a9e;border-color:rgba(124,138,158,0.3);background:rgba(124,138,158,0.1)">dev</span>
+          </div>
+        </div>
+        <div class="goal-xp">+40 xp</div>
+      </div>
+      <div class="goal-item" style="animation-delay:0.3s">
+        <div class="goal-check"></div>
+        <div style="flex:1">
+          <div class="goal-text">💰 Make first online earning (any amount)</div>
+          <div class="goal-tags">
+            <span class="goal-tag" style="color:#9e7c8a;border-color:rgba(158,124,138,0.3);background:rgba(158,124,138,0.1)">monthly</span>
+            <span class="goal-tag" style="color:#9e7c8a;border-color:rgba(158,124,138,0.3);background:rgba(158,124,138,0.1)">business</span>
+          </div>
+        </div>
+        <div class="goal-xp">+100 xp</div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+      <h2>Ready to plan your day?</h2>
+      <p>It takes 30 seconds to set up. Just pick a username and go.</p>
+      <a href="app.html" class="btn-primary">Open ZenDay →</a>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <span>🍃 ZenDay v0.1.0 · komino_dev · 10-day 10-apps #5</span>
+      <div class="footer-right">
+        <a href="https://github.com/kayo-isle69" target="_blank">GitHub</a>
+        <a href="app.html">App</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+</html>
