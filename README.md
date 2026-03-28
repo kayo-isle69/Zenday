@@ -6,6 +6,9 @@
 
 ---
 
+[**→ Open App**](https://kayo-isle69.github.io/zenday/app.html) &nbsp;·&nbsp; [**→ Landing Page**](https://kayo-isle69.github.io/zenday) &nbsp;·&nbsp;
+
+---
 ## 📸 What it looks like
 
 ```
